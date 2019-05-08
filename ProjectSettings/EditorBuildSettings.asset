@@ -20,9 +20,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/hard gameplay scene.unity
     guid: 3b99f7b715a15e5498bb4d77bcb1c4cc
-  - enabled: 1
-    path: Assets/Scenes/Pause.unity
-    guid: 9c0e1be0927dec244b9538b4bf4a9815
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
   - enabled: 1
     path: Assets/Scenes/Continue scene.unity
     guid: ba60275c7d79b194c85817d2e313c45c
@@ -32,4 +32,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/endgame scene.unity
     guid: 52697ab7ba7388848ae66f55e8e76815
+  - enabled: 1
+    path: Assets/Scenes/Scores scene.unity
+    guid: 10b2d07430920e548a7906442dd358b9
+  - enabled: 1
+    path: Assets/Scenes/Help screen.unity
+    guid: 148cbcbe3b424734cb1c912a146543a7
   m_configObjects: {}

@@ -28,7 +28,6 @@ public class Question : ScriptableObject
             first = Random.Range((int)Mathf.Pow(10, difficulty) * 2, (int)Mathf.Pow(10, difficulty + 1));
         else
             first = Random.Range((int)Mathf.Pow(10, difficulty), (int)Mathf.Pow(10, difficulty) * 9);
-        Debug.Log(first);
         int temp = first;
         for (int i = 0; i < difficulty + 1; i++)
         {
@@ -52,7 +51,6 @@ public class Question : ScriptableObject
                 answer[i] = temp / (int)Mathf.Pow(10, difficulty - i);
                 temp %= (int)Mathf.Pow(10, difficulty - i);
             }
-            Debug.Log(second + " add");
         }
         else if (Mode == 2)
         {
@@ -69,7 +67,6 @@ public class Question : ScriptableObject
                 answer[i] = temp / (int)Mathf.Pow(10, difficulty - i);
                 temp %= (int)Mathf.Pow(10, difficulty - i);
             }
-            Debug.Log(second + " sub");
         }
     }
 }

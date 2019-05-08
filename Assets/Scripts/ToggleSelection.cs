@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class ToggleSelection : MonoBehaviour
+public class ToggleSelection : UnityEngine.MonoBehaviour
 {
     public GameObject[] objectArray = new GameObject[11]; // used for the visual cursor
     public GameObject[] textArray = new GameObject[9]; // used to show what options the user has 
@@ -16,7 +16,6 @@ public class ToggleSelection : MonoBehaviour
     // Toggle used to toggle any of the settings as a selection for the game
     void Toggle(GameObject gameObject)
     {
-        Debug.Log(position); // print position delete later
         gameObject.SetActive(!gameObject.activeSelf);
         DeactivateToggle(position);
     }
@@ -71,7 +70,11 @@ public class ToggleSelection : MonoBehaviour
     // Scores moves player to the scores screen
     void Scores()
     {
-
+        if (CheckSelected())
+        {
+            FinalizeSelections();
+            SceneManager.LoadScene(9);
+        }
     }
 
     // Hides assets
@@ -113,7 +116,7 @@ public class ToggleSelection : MonoBehaviour
             objectArray[position].SetActive(false);
             if (position == 9)
             {
-                //score method
+                Scores();
             }
             else if (position % 3 == 0)
                 position += 2;
@@ -154,7 +157,7 @@ public class ToggleSelection : MonoBehaviour
         {
             if (position == 9)
             {
-                //
+                Scores();
             }
             else if (position == 10)
             {

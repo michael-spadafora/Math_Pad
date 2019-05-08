@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class PauseScreen : GamePlay
 {
-    private int[] fromPauseScenes = new int[4] {6, 7, difficulty + 2, 9};
+    private int[] fromPauseScenes = new int[4] {6, 7, difficulty + 2, 10};
     
     // Start is called before the first frame update
     void Start()

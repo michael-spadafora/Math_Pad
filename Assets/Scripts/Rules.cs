@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class BackToMenu : GamePlay
+public class Rules : UnityEngine.MonoBehaviour
 {
-
     // Start is called before the first frame update
     void Start()
     {
@@ -15,13 +14,7 @@ public class BackToMenu : GamePlay
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            RestartGame();
-            SceneManager.LoadScene(1);
-        }
-
-        if (Input.GetKeyDown(KeyCode.X))
+        if (Input.GetKeyDown(KeyCode.Q))
             SceneManager.LoadScene(5);
     }
 }

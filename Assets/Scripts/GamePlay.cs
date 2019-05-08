@@ -15,6 +15,8 @@ public class GamePlay : ToggleSelection
     public Texture[] hundreds;
     public Texture[] tens;
     public Texture[] ones;
+    public Text questionText;
+    public Text bunsText;
 
     private static List<Texture[]> textures;
     private static int currentQuestion = 0; // current question position, initialized at 0
@@ -22,28 +24,45 @@ public class GamePlay : ToggleSelection
     private static bool plus = true; // boolean for the current dancepad mode, addition or subtraction mode, initialized at true
     private static bool paused = false; // checks whether the game was paused
     private static int[,] inputs = new int[questionNumber, difficulty + 1]; // array that stores the user's answers inputted
+    private static bool[] inputsAnswered = new bool[questionNumber]; // array that checks whether each question has an answer
     private static Question[] questions; // array that contains Question objects which contain a question
+    public static int score = questionNumber * 5;
+    private static string[] bunsWords =
+        new string[7]{ "You're doing great!", "Awesome job!", "Keep it up!", "Way to go!", "Marvelous!", "Fantastic!", "Superb!" };
+
+    public static int[,] Inputs { get => inputs; set => inputs = value; }
+    public static int CurrentQuestion { get => currentQuestion; set => currentQuestion = value; }
+    public static bool Plus { get => plus; set => plus = value; }
+    public static bool Paused { get => paused; set => paused = value; }
+
+    // Restarts inputs
+    public void RestartGame()
+    {
+        plus = true;
+        paused = false;
+        currentQuestion = 0;
+        for (int i = 0; i < questionNumber; i++)
+        {
+            for (int j = 0; j < difficulty; j++)
+                inputs[i, j] = 0;
+        }
+    }
 
     // Hides every asset that needs to be hidden
     void HideAssets()
     {
-        //foreach (GameObject asset in answers)
-          //  asset.SetActive(false);
         foreach (GameObject asset in numbers)
             asset.SetActive(false);
         foreach (GameObject asset in addition)
             asset.SetActive(false);
         foreach (GameObject asset in subtraction)
             asset.SetActive(false);
-        //foreach (GameObject asset in dancepads)
-          //  asset.SetActive(false);
     }
 
     // Creates an array that is filled with any combination of 0, 1, and 2 
     // which represents the question type: number, addition, subtraction
     private int[] ModesArray()
     {
-        Debug.Log("QUESTIONS: " + questionNumber); // can delete
         int[] toReturn = new int[questionNumber];
         int remainder = questionNumber % modes.Length;
         for (int i = 0; i < questionNumber / modes.Length; i++)
@@ -81,6 +100,7 @@ public class GamePlay : ToggleSelection
             questions[i].init(temp[i], difficulty);
         }
         dancepads[1].SetActive(false);
+        questionText.text = "1";
     }
 
     // Shows a questions
@@ -137,9 +157,9 @@ public class GamePlay : ToggleSelection
     // Updates the user's answers on screen
     void UpdateAnswer()
     {
-        int i = difficulty; int j = 0;
+        int i = difficulty; int j = difficulty;
         foreach (GameObject asset in answers)        
-            asset.GetComponent<RawImage>().texture = textures[i--][inputs[currentQuestion, j++]];        
+            asset.GetComponent<RawImage>().texture = textures[i--][inputs[currentQuestion, j--]];        
     }
 
     // Adds or subtracts hundred
@@ -147,16 +167,17 @@ public class GamePlay : ToggleSelection
     {
         if (difficulty == 2) // as long as hundreds place isn't already 9
         {
-            if (plus && inputs[currentQuestion, 0] < 9)
+            if (plus && inputs[currentQuestion, difficulty] < 9)
             {
-                inputs[currentQuestion, 0]++;
+                inputs[currentQuestion, difficulty]++;
                 UpdateAnswer();
             }
-            else if (!plus && inputs[currentQuestion, 0] > 0)
+            else if (!plus && inputs[currentQuestion, difficulty] > 0)
             {
-                inputs[currentQuestion, 0]--;
+                inputs[currentQuestion, difficulty]--;
                 UpdateAnswer();
             }
+            inputsAnswered[currentQuestion] = true;
         }
     }
 
@@ -167,40 +188,41 @@ public class GamePlay : ToggleSelection
         {
             if (plus)
             {
-                if (!(inputs[currentQuestion, 0] == 9 && inputs[currentQuestion, 1] == 9))
+                if (!(inputs[currentQuestion, difficulty] == 9 && inputs[currentQuestion, difficulty - 1] == 9))
                 // can't add ten if answer input is 900 + 90 + x
                 {
-                    if (++inputs[currentQuestion, 1] == 10) // if tens place is now 10, carry over
+                    if (++inputs[currentQuestion, difficulty - 1] == 10) // if tens place is now 10, carry over
                     {
-                        inputs[currentQuestion, 0]++;
-                        inputs[currentQuestion, 1] = 0;
+                        inputs[currentQuestion, difficulty]++;
+                        inputs[currentQuestion, difficulty - 1] = 0;
                     }
                     UpdateAnswer();
                 }
             }
             else
             {
-                if (!(inputs[currentQuestion, 0] == 0 && inputs[currentQuestion, 1] == 0))
+                if (!(inputs[currentQuestion, difficulty] == 0 && inputs[currentQuestion, difficulty - 1] == 0))
                 // can't subtract ten if answer input is 000 + 00 + x
                 {
-                    if (--inputs[currentQuestion, 1] == -1) // if tens place is now -1, get tens from hundreds
+                    if (--inputs[currentQuestion, difficulty - 1] == -1) // if tens place is now -1, get tens from hundreds
                     {
-                        inputs[currentQuestion, 0]--;
-                        inputs[currentQuestion, 1] = 9;
+                        inputs[currentQuestion, difficulty]--;
+                        inputs[currentQuestion, difficulty - 1] = 9;
                     }
                     UpdateAnswer();
                 }
             }
-            
+            inputsAnswered[currentQuestion] = true;
         }
 
-        else if (difficulty == 1 && inputs[currentQuestion, 1] < 9)
+        else if (difficulty == 1)
         {
-            if (plus)
-                inputs[currentQuestion, 1]++;
-            else
-                inputs[currentQuestion, 1]--;
+            if (plus && inputs[currentQuestion, difficulty] < 9)
+                inputs[currentQuestion, difficulty]++;
+            else if (!plus && inputs[currentQuestion, difficulty] > 0)
+                    inputs[currentQuestion, difficulty]--;
             UpdateAnswer();
+            inputsAnswered[currentQuestion] = true;
         }
     }
 
@@ -214,14 +236,14 @@ public class GamePlay : ToggleSelection
                 if (!(inputs[currentQuestion, 0] == 9 && inputs[currentQuestion, 1] == 9 && inputs[currentQuestion, 2] == 9))
                 // can't add 1 if answer input is 999
                 {
-                    if (++inputs[currentQuestion, 2] == 10) // increase ones and if ones place is now 10
+                    if (++inputs[currentQuestion, 0] == 10) // increase ones and if ones place is now 10
                     {
                         if (++inputs[currentQuestion, 1] == 10) // increase tens and if tens place is now 10
                         {
-                            inputs[currentQuestion, 0]++; // increase hundreds
+                            inputs[currentQuestion, 2]++; // increase hundreds
                             inputs[currentQuestion, 1] = 0; // set tens back to 0
                         }
-                        inputs[currentQuestion, 2] = 0; // set ones back to 0
+                        inputs[currentQuestion, 0] = 0; // set ones back to 0
                     }
                     UpdateAnswer();
                 }
@@ -231,31 +253,32 @@ public class GamePlay : ToggleSelection
                 if (!(inputs[currentQuestion, 0] == 0 && inputs[currentQuestion, 1] == 0 && inputs[currentQuestion, 2] == 0))
                 // can't subtract 1 if answer input is 000
                 {
-                    if (--inputs[currentQuestion, 2] == -1) // subtract ones and if ones place is now -1
+                    if (--inputs[currentQuestion, 0] == -1) // subtract ones and if ones place is now -1
                     {
                         if (--inputs[currentQuestion, 1] == -1) // subtract tens and if tens place is now -1
                         {
-                            inputs[currentQuestion, 0]--; // decrease hundreds
+                            inputs[currentQuestion, 2]--; // decrease hundreds
                             inputs[currentQuestion, 1] = 9; // set tens back to 9 since borrowed from hundreds
                         }
-                        inputs[currentQuestion, 2] = 9; // set ones back to 9 since borrowed from tens
+                        inputs[currentQuestion, 0] = 9; // set ones back to 9 since borrowed from tens
                     }
                     UpdateAnswer();
                 }
             }
+            inputsAnswered[currentQuestion] = true;
         }
         
         else if (difficulty == 1) // double digits case
         {
             if (plus)
             {
-                if (!(inputs[currentQuestion, 1] == 9 && inputs[currentQuestion, 2] == 9))
+                if (!(inputs[currentQuestion, 1] == 9 && inputs[currentQuestion, 0] == 9))
                 // can't add one if answer input is 99
                 {
-                    if (++inputs[currentQuestion, 2] == 10) // if ones place is now 10, carry over
+                    if (++inputs[currentQuestion, 0] == 10) // if ones place is now 10, carry over
                     {
                         inputs[currentQuestion, 1]++; // increase tens by one
-                        inputs[currentQuestion, 2] = 0; // set ones back to 0
+                        inputs[currentQuestion, 0] = 0; // set ones back to 0
                     }
                     UpdateAnswer();
                 }
@@ -265,28 +288,30 @@ public class GamePlay : ToggleSelection
                 if (!(inputs[currentQuestion, 1] == 0 && inputs[currentQuestion, 2] == 0))
                 // can't subtract if answer input is 00
                 {
-                    if (--inputs[currentQuestion, 2] == -1) // if ones place is now -1, carry over
+                    if (--inputs[currentQuestion, 0] == -1) // if ones place is now -1, carry over
                     {
                         inputs[currentQuestion, 1]--; // subtract tens by one
-                        inputs[currentQuestion, 2] = 9; // set ones back to 9
+                        inputs[currentQuestion, 0] = 9; // set ones back to 9
                     }
                     UpdateAnswer();
                 }
             }
+            inputsAnswered[currentQuestion] = true;
         }
 
         else
         {
-            if (plus && inputs[currentQuestion, 2] < 9)
+            if (plus && inputs[currentQuestion, difficulty] < 9)
             {
-                inputs[currentQuestion, 2]++;
+                inputs[currentQuestion, difficulty]++;
                 UpdateAnswer();
             }
-            else if (!plus && inputs[currentQuestion, 2] > 0)
+            else if (!plus && inputs[currentQuestion, difficulty] > 0)
             {
-                inputs[currentQuestion, 2]--;
+                inputs[currentQuestion, difficulty]--;
                 UpdateAnswer();
             }
+            inputsAnswered[currentQuestion] = true;
         }
     }
 
@@ -296,8 +321,8 @@ public class GamePlay : ToggleSelection
         if (currentQuestion < questionNumber - 1)
         {
             currentQuestion++;
-            Debug.Log("Q " + currentQuestion);
             Show(questions[currentQuestion]);
+            questionText.text = (currentQuestion + 1).ToString();
         }
     }
 
@@ -307,8 +332,8 @@ public class GamePlay : ToggleSelection
         if (currentQuestion > 0)
         {
             currentQuestion--;
-            Debug.Log("Q " + currentQuestion);
             Show(questions[currentQuestion]);
+            questionText.text = (currentQuestion + 1).ToString();
         }
     }
 
@@ -317,26 +342,59 @@ public class GamePlay : ToggleSelection
     {
         if (plus)
         {
-            if (currentQuestion == questionNumber - 1)
-            {
-                Done();
-            }
+            Done();
         }
         else
         {
-            Debug.Log("ASDFSA");
             plus = true; // plus mode
             dancepads[0].SetActive(true); // shows plus pad
             dancepads[1].SetActive(false); // hides minus pad
         }
     }
 
+    // Check if every question has an answer
+    bool AllAnswered()
+    {
+        for (int i = 0; i < inputsAnswered.Length; i++)
+        {
+            if (!inputsAnswered[i])
+                return inputsAnswered[i];
+        }
+        return true;
+    }
+
+    bool CheckAnswer(int i)
+    {
+        for (int j = 0; j < questions[i].Answer.Length; i++)
+        {
+            if (inputs[i, j] != questions[i].Answer[j])
+                return false;
+        }
+        return true;
+    }
+    // Calculates score
+    int CalculateScore()
+    {
+        for (int i = 0; i < questionNumber; i++)
+        {
+            if (CheckAnswer(i))
+            {
+                score += 10;
+            }
+        }
+        return score;
+    }
+
     // Prompts user if done
     void Done()
     {
-
+        if (AllAnswered())
+        {
+            CalculateScore();
+            SceneManager.LoadScene(8);
+        }
     }
-
+    
     // Pauses the game
     void Pause()
     {
@@ -358,7 +416,7 @@ public class GamePlay : ToggleSelection
     // Changes Bun's words of encouragement
     void Encourage()
     {
-
+        bunsText.text = bunsWords[(int)Random.Range(0, 7)];
     }
 
     
@@ -368,13 +426,12 @@ public class GamePlay : ToggleSelection
     {
         if (!paused)
         {
-            Debug.Log("first time Paused: " + paused);
             SetUp();
             textures = new List<Texture[]>() { ones, tens, hundreds };
+            InvokeRepeating("Encourage", 10.0f, 5); // supposed to start in 10 seconds
         }
         else
         {
-            Debug.Log("asdfasdfasdfa Paused: " + paused);
             paused = false;        
         }
         Encourage(); // change question text somewhere here
